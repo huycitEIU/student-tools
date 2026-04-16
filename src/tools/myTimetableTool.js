@@ -1,4 +1,8 @@
+import { getCurrentUser } from '../firebase/auth.js';
+import { deleteToolData, loadToolData, saveToolData } from '../firebase/toolData.js';
+
 const STORAGE_KEY = 'student-tools:timetable-events-v1';
+const TOOL_ID = 'timetable';
 const START_HOUR = 7;
 const END_HOUR = 20;
 const SLOT_MINUTES = 30;
@@ -76,6 +80,50 @@ const loadEventsByWeek = () => {
 
 const saveEventsByWeek = (eventsByWeek) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(eventsByWeek));
+};
+
+const loadLocalEventsByWeek = loadEventsByWeek;
+
+const loadStoredEventsByWeek = async () => {
+  const user = getCurrentUser();
+  if (!user) {
+    return loadLocalEventsByWeek();
+  }
+
+  const localEvents = loadLocalEventsByWeek();
+  const remoteEvents = await loadToolData(user.uid, TOOL_ID, null);
+
+  if (remoteEvents && typeof remoteEvents === 'object' && Object.keys(remoteEvents).length > 0) {
+    return remoteEvents;
+  }
+
+  if (Object.keys(localEvents).length > 0) {
+    await saveToolData(user.uid, TOOL_ID, localEvents);
+  }
+
+  return localEvents;
+};
+
+const persistEventsByWeek = async (eventsByWeek) => {
+  saveEventsByWeek(eventsByWeek);
+
+  const user = getCurrentUser();
+  if (!user) {
+    return;
+  }
+
+  await saveToolData(user.uid, TOOL_ID, eventsByWeek);
+};
+
+const clearStoredTimetable = async () => {
+  saveEventsByWeek({});
+
+  const user = getCurrentUser();
+  if (!user) {
+    return;
+  }
+
+  await deleteToolData(user.uid, TOOL_ID);
 };
 
 const hasOverlap = (events, candidate, ignoreId = null) => {
@@ -177,8 +225,17 @@ export const myTimetableTool = {
     const today = new Date();
     const todayWeekStart = startOfMonday(today);
     let currentWeekStart = todayWeekStart;
-    let eventsByWeek = loadEventsByWeek();
+    let eventsByWeek = {};
     let selectedEventId = null;
+    let isMounted = true;
+
+    const applyEventsByWeek = async () => {
+      eventsByWeek = await loadStoredEventsByWeek();
+      if (!isMounted) {
+        return;
+      }
+      renderWeek();
+    };
 
     const currentWeekKey = () => getWeekKey(currentWeekStart);
 
@@ -188,7 +245,7 @@ export const myTimetableTool = {
 
     const setCurrentWeekEvents = (events) => {
       eventsByWeek[currentWeekKey()] = events;
-      saveEventsByWeek(eventsByWeek);
+      persistEventsByWeek(eventsByWeek);
     };
 
     const getWeekEventsByKey = (weekKey) => {
@@ -197,7 +254,7 @@ export const myTimetableTool = {
 
     const setWeekEventsByKey = (weekKey, events) => {
       eventsByWeek[weekKey] = events;
-      saveEventsByWeek(eventsByWeek);
+      persistEventsByWeek(eventsByWeek);
     };
 
     const resetForm = () => {
@@ -489,7 +546,11 @@ export const myTimetableTool = {
     });
 
     resetForm();
-    renderWeek();
+    applyEventsByWeek();
+
+    return () => {
+      isMounted = false;
+    };
   }
 };
 
