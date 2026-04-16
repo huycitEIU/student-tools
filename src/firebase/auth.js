@@ -7,6 +7,8 @@ import {
 } from 'firebase/auth';
 import { auth, isFirebaseConfigured } from './config.js';
 
+let currentUser = null;
+
 const ensureFirebaseReady = () => {
   if (!isFirebaseConfigured || !auth) {
     throw new Error('Firebase is not configured yet.');
@@ -15,12 +17,18 @@ const ensureFirebaseReady = () => {
 
 export const watchAuthState = (callback) => {
   if (!isFirebaseConfigured || !auth) {
+    currentUser = null;
     callback(null);
     return () => {};
   }
 
-  return onAuthStateChanged(auth, callback);
+  return onAuthStateChanged(auth, (user) => {
+    currentUser = user;
+    callback(user);
+  });
 };
+
+export const getCurrentUser = () => currentUser;
 
 export const signUpWithEmail = async ({ email, password, displayName }) => {
   ensureFirebaseReady();

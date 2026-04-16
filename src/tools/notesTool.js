@@ -1,4 +1,8 @@
+import { getCurrentUser } from '../firebase/auth.js';
+import { deleteToolData, loadToolData, saveToolData } from '../firebase/toolData.js';
+
 const STORAGE_KEY = 'student-tools:notes-v1';
+const TOOL_ID = 'notes';
 
 const loadNotes = () => {
   try {
@@ -11,6 +15,50 @@ const loadNotes = () => {
 
 const saveNotes = (notes) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+};
+
+const loadLocalNotes = loadNotes;
+
+const loadStoredNotes = async () => {
+  const user = getCurrentUser();
+  if (!user) {
+    return loadLocalNotes();
+  }
+
+  const localNotes = loadLocalNotes();
+  const remoteNotes = await loadToolData(user.uid, TOOL_ID, null);
+
+  if (Array.isArray(remoteNotes)) {
+    return remoteNotes;
+  }
+
+  if (localNotes.length > 0) {
+    await saveToolData(user.uid, TOOL_ID, localNotes);
+  }
+
+  return localNotes;
+};
+
+const persistNotes = async (notes) => {
+  saveNotes(notes);
+
+  const user = getCurrentUser();
+  if (!user) {
+    return;
+  }
+
+  await saveToolData(user.uid, TOOL_ID, notes);
+};
+
+const clearStoredNotes = async () => {
+  saveNotes([]);
+
+  const user = getCurrentUser();
+  if (!user) {
+    return;
+  }
+
+  await deleteToolData(user.uid, TOOL_ID);
 };
 
 const createNoteCard = (note) => {
@@ -74,8 +122,17 @@ export const notesTool = {
     const statusBox = root.querySelector('#notes-status');
     const notesList = root.querySelector('#notes-list');
 
-    let notes = loadNotes();
+    let notes = [];
     let editingNoteId = null;
+    let isMounted = true;
+
+    const applyNotes = async () => {
+      notes = await loadStoredNotes();
+      if (!isMounted) {
+        return;
+      }
+      renderNotes();
+    };
 
     const renderNotes = () => {
       const query = searchInput.value.trim().toLowerCase();
@@ -112,7 +169,7 @@ export const notesTool = {
       statusBox.textContent = `Editing note: ${note.title}`;
     };
 
-    const removeNote = (noteId) => {
+    const removeNote = async (noteId) => {
       const note = notes.find((item) => item.id === noteId);
       const shouldDelete = window.confirm(`Delete note "${note?.title || 'this note'}"? This cannot be undone.`);
       if (!shouldDelete) {
@@ -121,14 +178,14 @@ export const notesTool = {
       }
 
       notes = notes.filter((item) => item.id !== noteId);
-      saveNotes(notes);
+      await persistNotes(notes);
       if (editingNoteId === noteId) {
         resetForm();
       }
       renderNotes();
     };
 
-    saveBtn.addEventListener('click', () => {
+    saveBtn.addEventListener('click', async () => {
       const title = titleInput.value.trim();
       const content = contentInput.value.trim();
 
@@ -163,7 +220,7 @@ export const notesTool = {
         statusBox.textContent = 'Note saved.';
       }
 
-      saveNotes(notes);
+      await persistNotes(notes);
       resetForm();
       renderNotes();
     });
@@ -177,7 +234,7 @@ export const notesTool = {
       renderNotes();
     });
 
-    deleteAllBtn.addEventListener('click', () => {
+    deleteAllBtn.addEventListener('click', async () => {
       const shouldDelete = window.confirm('Delete all notes? This cannot be undone.');
       if (!shouldDelete) {
         statusBox.textContent = 'Delete all canceled.';
@@ -185,7 +242,7 @@ export const notesTool = {
       }
 
       notes = [];
-      saveNotes(notes);
+      await clearStoredNotes();
       resetForm();
       renderNotes();
       statusBox.textContent = 'All notes deleted.';
@@ -204,6 +261,10 @@ export const notesTool = {
       }
     });
 
-    renderNotes();
+    applyNotes();
+
+    return () => {
+      isMounted = false;
+    };
   }
 };
