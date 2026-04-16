@@ -1,0 +1,134 @@
+.qr-card {
+  max-width: 1120px;
+}
+
+.qr-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.95fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.qr-form-panel,
+.qr-preview-panel {
+  border: 1px solid #dbe2ea;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  padding: 16px;
+}
+
+.qr-field {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.qr-field span {
+  font-size: 0.9rem;
+}
+
+.qr-textarea,
+.qr-field input,
+.qr-field select {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font: inherit;
+  color: #0f172a;
+  background: #ffffff;
+}
+
+.qr-textarea {
+  min-height: 130px;
+  resize: vertical;
+}
+
+.qr-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.qr-actions {
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.qr-download {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.qr-download[aria-disabled='true'] {
+  pointer-events: none;
+  opacity: 0.55;
+}
+
+.qr-status {
+  margin-top: 14px;
+}
+
+.qr-preview-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.qr-preview {
+  min-height: 340px;
+  border-radius: 12px;
+  border: 1px dashed #cbd5e1;
+  background: radial-gradient(circle at top, #ffffff 0%, #eef2ff 100%);
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  text-align: center;
+}
+
+.qr-preview p {
+  max-width: 220px;
+  margin: 0;
+  color: #64748b;
+}
+
+.qr-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 16px;
+  background: #ffffff;
+  padding: 14px;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.12);
+}
+
+.qr-details {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #dbe2ea;
+}
+
+.qr-details p {
+  margin: 0;
+  color: #334155;
+}
+
+.qr-details strong {
+  color: #0f172a;
+}
+
+@media (max-width: 900px) {
+  .qr-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .qr-options {
+    grid-template-columns: 1fr;
+  }
+}

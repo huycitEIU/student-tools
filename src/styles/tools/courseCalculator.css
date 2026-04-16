@@ -1,0 +1,41 @@
+/* ============================================
+   COURSE CALCULATOR TOOL STYLES
+   ============================================ */
+
+.courses {
+  display: grid;
+  gap: 10px;
+}
+
+.course-title-row {
+  margin-bottom: 10px;
+}
+
+.course-title-row input {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+}
+
+.course-row {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr auto;
+  gap: 8px;
+}
+
+.course-row input {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+}
+
+/* Course Calculator - Responsive */
+@media (max-width: 700px) {
+  .course-row {
+    grid-template-columns: 1fr;
+  }
+}

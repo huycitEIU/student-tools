@@ -1,0 +1,45 @@
+/* ============================================
+   UNIT CONVERTER TOOL STYLES
+   ============================================ */
+
+.converter-card {
+  max-width: 900px;
+}
+
+.converter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.converter-grid label {
+  display: grid;
+  gap: 6px;
+  color: #334155;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.converter-grid input,
+.converter-grid select {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.converter-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Unit Converter - Responsive */
+@media (max-width: 700px) {
+  .converter-grid {
+    grid-template-columns: 1fr;
+  }
+}

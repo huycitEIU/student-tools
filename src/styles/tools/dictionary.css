@@ -1,0 +1,61 @@
+/* ============================================
+   DICTIONARY TOOL STYLES
+   ============================================ */
+
+.dictionary-card {
+  max-width: 980px;
+}
+
+.dictionary-search-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.dictionary-search-row input {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+}
+
+.dictionary-entry {
+  display: grid;
+  gap: 10px;
+}
+
+.dictionary-entry p {
+  margin: 0;
+}
+
+.dictionary-meanings {
+  display: grid;
+  gap: 10px;
+}
+
+.dictionary-meaning-card {
+  border: 1px solid #dbe2ea;
+  border-radius: 10px;
+  padding: 12px;
+  background: #ffffff;
+}
+
+.dictionary-meaning-card h3 {
+  margin: 0 0 8px;
+  color: #1e3a8a;
+  text-transform: capitalize;
+}
+
+.dictionary-meaning-card p {
+  margin: 0 0 6px;
+  line-height: 1.45;
+}
+
+/* Dictionary Tool - Responsive */
+@media (max-width: 700px) {
+  .dictionary-search-row {
+    grid-template-columns: 1fr;
+  }
+}

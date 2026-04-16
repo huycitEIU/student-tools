@@ -1,0 +1,152 @@
+/* ============================================
+   RANDOM TOOL STYLES
+   ============================================ */
+
+.random-card {
+  max-width: 980px;
+}
+
+.random-section {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.random-section h3 {
+  margin: 0;
+  color: #0f172a;
+}
+
+.random-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.random-grid label {
+  display: grid;
+  gap: 6px;
+  color: #334155;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.random-grid input,
+.random-textarea {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.random-textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.random-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.random-result p {
+  margin-bottom: 8px;
+}
+
+/* Modal Popup */
+.random-popup {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.random-popup.visible {
+  display: flex;
+}
+
+.random-popup-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.62);
+  backdrop-filter: blur(3px);
+}
+
+.random-popup-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(560px, 100%);
+  border-radius: 20px;
+  padding: 28px 24px 22px;
+  background: linear-gradient(180deg, #ffffff, #eff6ff);
+  border: 1px solid #bfdbfe;
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.35);
+  text-align: center;
+}
+
+.random-popup-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #0f172a;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.random-popup-label {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #1d4ed8;
+  margin-bottom: 10px;
+}
+
+.random-popup-body {
+  display: grid;
+  gap: 10px;
+}
+
+.random-popup-body h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.35rem;
+}
+
+.random-popup-value {
+  margin: 0;
+  font-size: clamp(2.25rem, 8vw, 4.5rem);
+  font-weight: 900;
+  line-height: 1;
+  color: #0f172a;
+  word-break: break-word;
+}
+
+.random-popup-meta {
+  margin: 0;
+  color: #475569;
+  font-size: 1rem;
+}
+
+/* Random Tool - Responsive */
+@media (max-width: 700px) {
+  .random-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .random-popup-dialog {
+    padding: 24px 18px 18px;
+  }
+}
