@@ -23,6 +23,10 @@ jobs:
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
           VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
+      - name: Deploy Firestore rules
+        run: npx -y firebase-tools@latest deploy --only firestore:rules --project studenttools-f6d79
+        env:
+          FIREBASE_SERVICE_ACCOUNT_STUDENTTOOLS_F6D79: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_STUDENTTOOLS_F6D79 }}
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
