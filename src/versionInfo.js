@@ -5,6 +5,7 @@ export const VERSION_HISTORY = [
     version: 'v1.9.0',
     date: '2026-04-19',
     updates: [
+      'Added new tools: Constants, English Vocabulary, and IELTS Writing Simulation.',
       'Added global light/dark theme support for the app.',
       'Added a topbar theme switch button with saved user preference.',
       'Added dark-mode styling coverage for tool result surfaces across Practice, IELTS Writing, Timetable, Weather, Random, and QR Generator.',
