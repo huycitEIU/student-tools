@@ -82,7 +82,7 @@ const renderFeedbackList = (items, isAdmin) => {
               <button class="action-btn" type="button" data-feedback-action="save-status" data-feedback-id="${escapeHtml(item.id)}">Update Status</button>
             </div>
           `
-        : '';
+        : `<span class="feedback-status-badge status-${status}">${escapeHtml(STATUS_LABELS[status] || 'Open')}</span>`;
 
       return `
         <li class="feedback-item type-${type}">

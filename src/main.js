@@ -55,10 +55,19 @@ const applyTheme = () => {
   localStorage.setItem(THEME_STORAGE_KEY, currentTheme);
 };
 
+const syncThemeToggleLabel = () => {
+  const toggleThemeButton = document.querySelector('#btn-toggle-theme');
+  if (!toggleThemeButton) {
+    return;
+  }
+
+  toggleThemeButton.textContent = `${currentTheme === 'dark' ? 'Light' : 'Dark'} theme`;
+};
+
 const toggleTheme = () => {
   currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
   applyTheme();
-  renderApp();
+  syncThemeToggleLabel();
 };
 
 // Tool emoji icons for the home grid
@@ -1018,6 +1027,7 @@ const mountActiveTool = () => {
   syncNotificationUi();
   syncTopbarTimerBadge();
   syncTopbarStreak();
+  syncThemeToggleLabel();
 };
 
 window.addEventListener(STUDY_TIMER_EVENT, syncTopbarTimerBadge);
