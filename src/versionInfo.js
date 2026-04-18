@@ -1,6 +1,17 @@
-export const APP_VERSION = 'v1.9.0';
+export const APP_VERSION = 'v1.10.0';
 
 export const VERSION_HISTORY = [
+  {
+    version: 'v1.10.0',
+    date: '2026-04-19',
+    updates: [
+      'Added new Feedback tool with type selection (bug, improve, help, question, other), status tracking, and shared visibility for all users.',
+      'Added type-based color coding and status display for feedback items.',
+      'Moved Feedback next to Home in the General section of the sidebar.',
+      'Updated Firestore rules for shared feedback read access and validated authenticated create/status-update flows.'
+    ],
+    fixes: []
+  },
   {
     version: 'v1.9.0',
     date: '2026-04-19',

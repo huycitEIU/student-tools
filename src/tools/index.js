@@ -3,6 +3,7 @@ import { chineseVocabularyTool } from './chineseVocabularyTool.js';
 import { englishVocabularyTool } from './englishVocabularyTool.js';
 import { constantsTool } from './constantsTool.js';
 import { dictionaryTool } from './dictionaryTool.js';
+import { feedbackTool } from './feedbackTool.js';
 import { gradeScaleTool } from './gradeScaleTool.js';
 import { ieltsWritingTool } from './ieltsWritingTool.js';
 import { moneyManagementTool } from './moneyManagementTool.js';
@@ -21,6 +22,7 @@ export const tools = [
 	chineseVocabularyTool,
 	englishVocabularyTool,
 	constantsTool,
+	feedbackTool,
 	practiceTool,
 	dictionaryTool,
 	moneyManagementTool,

@@ -65,6 +65,7 @@ const toggleTheme = () => {
 const toolIcons = {
   'weather': '🌤️',
   'dictionary': '📚',
+  'feedback': '💬',
   'chinese-vocabulary': '汉',
   'english-vocabulary': 'A',
   'constants': '∑',
@@ -86,6 +87,7 @@ const toolIcons = {
 const toolDescriptions = {
   'weather': 'Check weather information',
   'dictionary': 'Look up word definitions',
+  'feedback': 'Share bugs, improvements, and support requests',
   'chinese-vocabulary': 'Build and search Chinese vocabulary',
   'english-vocabulary': 'Build and search English vocabulary',
   'constants': 'Browse and store math/physics constants',
@@ -569,6 +571,15 @@ const renderMenu = () => {
             data-tool-id="home"
           >
             🏠 Home
+          </button>
+        </li>
+        <li>
+          <button
+            class="tool-link ${activeToolId === 'feedback' ? 'active' : ''}"
+            type="button"
+            data-tool-id="feedback"
+          >
+            Feedback
           </button>
         </li>
       </ul>
