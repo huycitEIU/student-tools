@@ -34,42 +34,67 @@ const WORD_TYPE_OPTIONS = [
   { value: 'other', label: 'Other' }
 ];
 
-const MULTIPLE_CHOICE_DIRECTIONS = [
+const LANGUAGE_CONFIGS = {
+  chinese: {
+    value: 'chinese',
+    label: 'Chinese',
+    vocabularyLabel: 'Chinese Vocabulary',
+    wordField: 'chineseWord',
+    wordLabel: 'Chinese word',
+    pronunciationField: 'pinyin',
+    pronunciationLabel: 'Pinyin',
+    meaningField: 'vietnamese',
+    meaningLabel: 'Vietnamese meaning'
+  },
+  english: {
+    value: 'english',
+    label: 'English',
+    vocabularyLabel: 'English Vocabulary',
+    wordField: 'englishWord',
+    wordLabel: 'English word',
+    pronunciationField: 'phonetic',
+    pronunciationLabel: 'Phonetic',
+    meaningField: 'vietnamese',
+    meaningLabel: 'Vietnamese meaning'
+  }
+};
+
+const MULTIPLE_CHOICE_BLUEPRINTS = [
   {
     value: 'word-meaning',
     label: 'Word -> Meaning',
-    promptLabel: 'Chinese word',
-    answerLabel: 'Vietnamese meaning',
-    promptValue: (entry) => entry.chineseWord,
-    answerValue: (entry) => entry.vietnamese,
-    requires: (entry) => Boolean(entry.chineseWord && entry.vietnamese)
+    promptLabel: (config) => config.wordLabel,
+    answerLabel: (config) => config.meaningLabel,
+    promptValue: (entry, config) => entry[config.wordField],
+    answerValue: (entry, config) => entry[config.meaningField],
+    requires: (entry, config) => Boolean(entry[config.wordField] && entry[config.meaningField])
   },
   {
     value: 'meaning-word',
     label: 'Meaning -> Word',
-    promptLabel: 'Vietnamese meaning',
-    answerLabel: 'Chinese word',
-    promptValue: (entry) => entry.vietnamese,
-    answerValue: (entry) => entry.chineseWord,
-    requires: (entry) => Boolean(entry.vietnamese && entry.chineseWord)
+    promptLabel: (config) => config.meaningLabel,
+    answerLabel: (config) => config.wordLabel,
+    promptValue: (entry, config) => entry[config.meaningField],
+    answerValue: (entry, config) => entry[config.wordField],
+    requires: (entry, config) => Boolean(entry[config.wordField] && entry[config.meaningField])
   },
   {
-    value: 'pinyin-word',
-    label: 'Pinyin -> Word',
-    promptLabel: 'Pinyin',
-    answerLabel: 'Chinese word',
-    promptValue: (entry) => entry.pinyin,
-    answerValue: (entry) => entry.chineseWord,
-    requires: (entry) => Boolean(entry.pinyin && entry.chineseWord)
+    value: 'pronunciation-word',
+    label: (config) => `${config.pronunciationLabel} -> Word`,
+    promptLabel: (config) => config.pronunciationLabel,
+    answerLabel: (config) => config.wordLabel,
+    promptValue: (entry, config) => entry[config.pronunciationField],
+    answerValue: (entry, config) => entry[config.wordField],
+    requires: (entry, config) => Boolean(entry[config.pronunciationField] && entry[config.wordField])
   },
   {
     value: 'word-type',
     label: 'Word -> Type',
-    promptLabel: 'Chinese word',
-    answerLabel: 'Type',
-    promptValue: (entry) => entry.chineseWord,
+    promptLabel: (config) => config.wordLabel,
+    answerLabel: () => 'Type',
+    promptValue: (entry, config) => entry[config.wordField],
     answerValue: (entry) => entry.wordType,
-    requires: (entry) => Boolean(entry.chineseWord && entry.wordType)
+    requires: (entry, config) => Boolean(entry[config.wordField] && entry.wordType)
   }
 ];
 
@@ -90,8 +115,7 @@ const pickRandom = (items) => {
     return null;
   }
 
-  const index = Math.floor(Math.random() * items.length);
-  return items[index];
+  return items[Math.floor(Math.random() * items.length)];
 };
 
 const pickUniqueOptions = (correctValue, pool, maxChoices = 4) => {
@@ -105,25 +129,40 @@ const pickUniqueOptions = (correctValue, pool, maxChoices = 4) => {
   return shuffleArray([normalizedCorrect, ...distractors]);
 };
 
+const getLanguageConfig = (language = 'chinese') => {
+  return LANGUAGE_CONFIGS[language] || LANGUAGE_CONFIGS.chinese;
+};
+
+const getQuestionDirections = (config) => {
+  return MULTIPLE_CHOICE_BLUEPRINTS.map((blueprint) => ({
+    value: blueprint.value,
+    label: typeof blueprint.label === 'function' ? blueprint.label(config) : blueprint.label,
+    promptLabel: blueprint.promptLabel(config),
+    answerLabel: blueprint.answerLabel(config),
+    promptValue: (entry) => blueprint.promptValue(entry, config),
+    answerValue: (entry) => blueprint.answerValue(entry, config),
+    requires: (entry) => blueprint.requires(entry, config)
+  }));
+};
+
 export const practiceTool = {
   id: 'practice',
   label: 'Practice',
   render: () => `
     <section class="card practice-card">
       <h2>Practice</h2>
-      <p>Practice with flashcards and multiple-choice using the same data as Chinese Vocabulary.</p>
+      <p>Practice with flashcards and multiple-choice using Chinese or English vocabulary.</p>
 
       <div class="practice-toolbar">
         <select id="practice-language" class="practice-select">
           <option value="chinese">Language: Chinese</option>
+          <option value="english">Language: English</option>
         </select>
         <select id="practice-mode" class="practice-select">
           <option value="flashcard">Mode: Flashcard</option>
           <option value="multiple-choice">Mode: Multiple Choice</option>
         </select>
-        <select id="practice-mcq-direction" class="practice-select">
-          ${MULTIPLE_CHOICE_DIRECTIONS.map((direction) => `<option value="${direction.value}">Quiz: ${direction.label}</option>`).join('')}
-        </select>
+        <select id="practice-mcq-direction" class="practice-select"></select>
         <select id="practice-type-filter" class="practice-select">
           ${WORD_TYPE_OPTIONS.map((option) => `<option value="${option.value}">Type: ${option.label}</option>`).join('')}
         </select>
@@ -133,14 +172,9 @@ export const practiceTool = {
       </div>
 
       <div id="practice-alert" class="practice-alert" hidden></div>
-
       <div id="practice-status" class="notes-status">Loading vocabulary...</div>
-
       <div id="practice-content" class="practice-content"></div>
-
-      <div class="practice-hint">Future-ready: this tool now supports Flashcard and Multiple Choice, and can be expanded with typing and listening modes.</div>
-
-      <div id="practice-toast" class="practice-toast" hidden aria-live="polite" aria-atomic="true"></div>
+      <div class="practice-hint">Future-ready: this tool supports Flashcard and Multiple Choice, and can be expanded with typing and listening modes.</div>
 
       <div id="practice-modal" class="practice-modal-backdrop" hidden>
         <section class="practice-modal-card" role="dialog" aria-modal="true" aria-labelledby="practice-modal-title">
@@ -164,7 +198,6 @@ export const practiceTool = {
     const alertBox = root.querySelector('#practice-alert');
     const statusBox = root.querySelector('#practice-status');
     const contentBox = root.querySelector('#practice-content');
-    const toastBox = root.querySelector('#practice-toast');
     const modal = root.querySelector('#practice-modal');
     const modalTitle = root.querySelector('#practice-modal-title');
     const modalBody = root.querySelector('#practice-modal-body');
@@ -178,7 +211,6 @@ export const practiceTool = {
     let mcqSelectedAnswer = null;
     let mcqCorrectCount = 0;
     let mcqAttemptCount = 0;
-    let toastTimer = null;
     let isMounted = true;
 
     const setAlert = (message = '', level = '') => {
@@ -193,22 +225,6 @@ export const practiceTool = {
       alertBox.textContent = message;
       alertBox.classList.remove('info', 'warning', 'success');
       alertBox.classList.add(level || 'info');
-    };
-
-    const showToast = (message, level = 'info', duration = 1800) => {
-      toastBox.textContent = message;
-      toastBox.hidden = false;
-      toastBox.classList.remove('info', 'warning', 'success');
-      toastBox.classList.add(level);
-
-      if (toastTimer) {
-        clearTimeout(toastTimer);
-      }
-
-      toastTimer = setTimeout(() => {
-        toastBox.hidden = true;
-        toastBox.textContent = '';
-      }, duration);
     };
 
     const openModal = ({ title, bodyHtml }) => {
@@ -228,6 +244,8 @@ export const practiceTool = {
       }
     };
 
+    const getCurrentConfig = () => getLanguageConfig(languageSelect.value);
+
     const getFilteredEntries = () => {
       const selectedType = normalize(typeFilterSelect.value);
       if (!selectedType) {
@@ -239,11 +257,20 @@ export const practiceTool = {
 
     const getCurrentCard = () => filtered[cardIndex] || null;
 
+    const getDirections = () => getQuestionDirections(getCurrentConfig());
+
     const getSelectedDirection = () => {
-      return MULTIPLE_CHOICE_DIRECTIONS.find((item) => item.value === mcqDirectionSelect.value) || MULTIPLE_CHOICE_DIRECTIONS[0];
+      const directions = getDirections();
+      return directions.find((item) => item.value === mcqDirectionSelect.value) || directions[0];
+    };
+
+    const syncDirectionOptions = () => {
+      const directions = getDirections();
+      mcqDirectionSelect.innerHTML = directions.map((direction) => `<option value="${direction.value}">Quiz: ${direction.label}</option>`).join('');
     };
 
     const buildMultipleChoiceQuestion = () => {
+      const config = getCurrentConfig();
       const direction = getSelectedDirection();
       const candidates = filtered.filter((entry) => direction.requires(entry));
 
@@ -259,12 +286,11 @@ export const practiceTool = {
         return null;
       }
 
-      const pool = candidates
-        .map((entry) => normalizeSpaces(direction.answerValue(entry)))
-        .filter(Boolean);
+      const pool = candidates.map((entry) => normalizeSpaces(direction.answerValue(entry))).filter(Boolean);
       const options = pickUniqueOptions(correctAnswer, pool, 4);
 
       return {
+        config,
         direction,
         prompt,
         correctAnswer,
@@ -274,14 +300,15 @@ export const practiceTool = {
     };
 
     const renderFlashcard = () => {
+      const config = getCurrentConfig();
       filtered = getFilteredEntries();
 
       if (!filtered.length) {
-        setAlert('No vocabulary matches the selected type filter.', 'warning');
+        setAlert(`No ${config.vocabularyLabel.toLowerCase()} matches the selected type filter.`, 'warning');
         contentBox.innerHTML = `
           <div class="practice-empty">
             <p>No vocabulary matches the selected filter.</p>
-            <p>Add words in Chinese Vocabulary first, then click Refresh.</p>
+            <p>Add words in ${config.vocabularyLabel} first, then click Refresh.</p>
           </div>
         `;
         statusBox.textContent = `Loaded ${entries.length} item(s). Matching: 0.`;
@@ -302,14 +329,14 @@ export const practiceTool = {
           <button id="practice-flip-card" class="practice-flashcard ${isFlipped ? 'flipped' : ''}" type="button" aria-label="Flip flashcard">
             <div class="practice-flashcard-face practice-front">
               <p class="practice-face-label">Front</p>
-              <p class="practice-front-word">${card.chineseWord || '-'}</p>
+              <p class="practice-front-word">${card?.[config.wordField] || '-'}</p>
               <p class="practice-tip">Click to flip</p>
             </div>
             <div class="practice-flashcard-face practice-back">
               <p class="practice-face-label">Back</p>
-              <p><strong>Pinyin:</strong> ${card.pinyin || '-'}</p>
-              <p><strong>Meaning:</strong> ${card.vietnamese || '-'}</p>
-              <p><strong>Type:</strong> ${card.wordType || '-'}</p>
+              <p><strong>${config.pronunciationLabel}:</strong> ${card?.[config.pronunciationField] || '-'}</p>
+              <p><strong>${config.meaningLabel}:</strong> ${card?.[config.meaningField] || '-'}</p>
+              <p><strong>Type:</strong> ${card?.wordType || '-'}</p>
             </div>
           </button>
 
@@ -326,13 +353,15 @@ export const practiceTool = {
     };
 
     const renderMultipleChoice = () => {
+      const config = getCurrentConfig();
       filtered = getFilteredEntries();
+
       if (!filtered.length) {
-        setAlert('No vocabulary matches the selected type filter.', 'warning');
+        setAlert(`No ${config.vocabularyLabel.toLowerCase()} matches the selected type filter.`, 'warning');
         contentBox.innerHTML = `
           <div class="practice-empty">
             <p>No vocabulary matches the selected filter.</p>
-            <p>Add words in Chinese Vocabulary first, then click Refresh.</p>
+            <p>Add words in ${config.vocabularyLabel} first, then click Refresh.</p>
           </div>
         `;
         statusBox.textContent = `Loaded ${entries.length} item(s). Matching: 0.`;
@@ -412,6 +441,8 @@ export const practiceTool = {
     };
 
     const renderMode = () => {
+      syncDirectionOptions();
+
       if (modeSelect.value === 'flashcard') {
         mcqDirectionSelect.disabled = true;
         renderFlashcard();
@@ -428,14 +459,15 @@ export const practiceTool = {
     };
 
     const loadEntries = async () => {
-      statusBox.textContent = 'Loading vocabulary...';
-      setAlert('Syncing vocabulary data...', 'info');
+      const config = getCurrentConfig();
+      statusBox.textContent = `Loading ${config.vocabularyLabel.toLowerCase()}...`;
+      setAlert(`Syncing ${config.vocabularyLabel.toLowerCase()} data...`, 'info');
 
       try {
         entries = await loadStoredVocabularyEntries(languageSelect.value);
       } catch {
         entries = [];
-        setAlert('Could not load vocabulary data right now.', 'warning');
+        setAlert(`Could not load ${config.vocabularyLabel.toLowerCase()} data right now.`, 'warning');
       }
 
       if (!isMounted) {
@@ -521,6 +553,13 @@ export const practiceTool = {
       renderMode();
     });
 
+    languageSelect.addEventListener('change', () => {
+      cardIndex = 0;
+      isFlipped = false;
+      resetMultipleChoiceRound();
+      loadEntries();
+    });
+
     mcqDirectionSelect.addEventListener('change', () => {
       resetMultipleChoiceRound();
       renderMode();
@@ -531,11 +570,12 @@ export const practiceTool = {
     });
 
     summaryBtn.addEventListener('click', () => {
+      const config = getCurrentConfig();
       const accuracy = mcqAttemptCount ? `${Math.round((mcqCorrectCount / mcqAttemptCount) * 100)}%` : '0%';
       openModal({
         title: 'Practice Summary',
         bodyHtml: `
-          <p><strong>Language:</strong> ${languageSelect.value}</p>
+          <p><strong>Language:</strong> ${config.label}</p>
           <p><strong>Mode:</strong> ${modeSelect.value === 'multiple-choice' ? 'Multiple Choice' : 'Flashcard'}</p>
           <p><strong>Total loaded:</strong> ${entries.length}</p>
           <p><strong>Matching filter:</strong> ${filtered.length}</p>
@@ -546,12 +586,15 @@ export const practiceTool = {
     });
 
     helpBtn.addEventListener('click', () => {
+      const config = getCurrentConfig();
       openModal({
         title: 'How to Practice',
         bodyHtml: `
+          <p><strong>Language:</strong> switch between ${LANGUAGE_CONFIGS.chinese.label} and ${LANGUAGE_CONFIGS.english.label} vocabulary.</p>
           <p><strong>Flashcard:</strong> click the card to flip, use Previous/Next to navigate, Shuffle to randomize.</p>
           <p><strong>Multiple Choice:</strong> choose a quiz direction, pick one answer, then click Next Question.</p>
           <p><strong>Filter:</strong> use Type filter to focus on specific grammar categories.</p>
+          <p><strong>Current language:</strong> ${config.vocabularyLabel}.</p>
         `
       });
     });
@@ -567,9 +610,6 @@ export const practiceTool = {
     loadEntries();
 
     return () => {
-      if (toastTimer) {
-        clearTimeout(toastTimer);
-      }
       document.removeEventListener('keydown', onDocumentKeydown);
       isMounted = false;
     };

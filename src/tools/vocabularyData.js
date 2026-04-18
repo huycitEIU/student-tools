@@ -8,6 +8,11 @@ const VOCABULARY_CONFIGS = {
     storageKey: 'student-tools:chinese-vocabulary-v1',
     toolId: 'chinese-vocabulary',
     label: 'Chinese'
+  },
+  english: {
+    storageKey: 'student-tools:english-vocabulary-v1',
+    toolId: 'english-vocabulary',
+    label: 'English'
   }
 };
 

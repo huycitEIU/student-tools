@@ -1,0 +1,384 @@
+/* Dark-theme fixes loaded last so tool-specific light styles do not override them. */
+:root[data-theme='dark'] #tool-content .card,
+:root[data-theme='dark'] #tool-content [class$='-card'],
+:root[data-theme='dark'] #tool-content [class*='-card '],
+:root[data-theme='dark'] #tool-content .placeholder-card,
+:root[data-theme='dark'] #tool-content [class$='-panel'],
+:root[data-theme='dark'] #tool-content [class*='-panel '],
+:root[data-theme='dark'] #tool-content [class$='-shell'],
+:root[data-theme='dark'] #tool-content [class*='-shell '],
+:root[data-theme='dark'] #tool-content .result {
+  background: var(--bg-surface);
+  border-color: var(--border-main);
+  color: var(--text-main);
+}
+
+:root[data-theme='dark'] #tool-content [class$='-status'],
+:root[data-theme='dark'] #tool-content [class*='-status '],
+:root[data-theme='dark'] #tool-content .status,
+:root[data-theme='dark'] #tool-content .result-status {
+  background: var(--bg-soft);
+  border-color: var(--border-main);
+  color: var(--text-main);
+}
+
+:root[data-theme='dark'] #tool-content [class$='-form'],
+:root[data-theme='dark'] #tool-content [class*='-form '],
+:root[data-theme='dark'] #tool-content form,
+:root[data-theme='dark'] #tool-content [class$='-controls'],
+:root[data-theme='dark'] #tool-content [class*='-controls '],
+:root[data-theme='dark'] #tool-content [class$='-filters'],
+:root[data-theme='dark'] #tool-content [class*='-filters '],
+:root[data-theme='dark'] #tool-content [class$='-inputs'],
+:root[data-theme='dark'] #tool-content [class*='-inputs '],
+:root[data-theme='dark'] #tool-content [class$='-toolbar'],
+:root[data-theme='dark'] #tool-content [class*='-toolbar '] {
+  color: var(--text-main);
+}
+
+:root[data-theme='dark'] #tool-content label,
+:root[data-theme='dark'] #tool-content [class$='-label'],
+:root[data-theme='dark'] #tool-content [class*='-label '] {
+  color: var(--text-muted);
+}
+
+:root[data-theme='dark'] #tool-content input,
+:root[data-theme='dark'] #tool-content textarea,
+:root[data-theme='dark'] #tool-content select {
+  background: var(--bg-soft);
+  border-color: var(--border-main);
+  color: var(--text-main);
+}
+
+:root[data-theme='dark'] #tool-content input::placeholder,
+:root[data-theme='dark'] #tool-content textarea::placeholder {
+  color: var(--text-muted);
+}
+
+:root[data-theme='dark'] #tool-content textarea,
+:root[data-theme='dark'] #tool-content .notes-editor {
+  background: var(--bg-soft);
+  color: var(--text-main);
+}
+
+:root[data-theme='dark'] #tool-content table,
+:root[data-theme='dark'] #tool-content thead,
+:root[data-theme='dark'] #tool-content tbody,
+:root[data-theme='dark'] #tool-content tr,
+:root[data-theme='dark'] #tool-content th,
+:root[data-theme='dark'] #tool-content td {
+  border-color: var(--border-main);
+  color: var(--text-main);
+}
+
+:root[data-theme='dark'] #tool-content thead,
+:root[data-theme='dark'] #tool-content th {
+  background: var(--bg-soft-2);
+}
+
+:root[data-theme='dark'] #tool-content tbody tr,
+:root[data-theme='dark'] #tool-content td {
+  background: var(--bg-surface);
+}
+
+:root[data-theme='dark'] #tool-content h1,
+:root[data-theme='dark'] #tool-content h2,
+:root[data-theme='dark'] #tool-content h3,
+:root[data-theme='dark'] #tool-content h4,
+:root[data-theme='dark'] #tool-content h5,
+:root[data-theme='dark'] #tool-content h6,
+:root[data-theme='dark'] #tool-content strong,
+:root[data-theme='dark'] #tool-content .tool-name,
+:root[data-theme='dark'] #tool-content .item-title,
+:root[data-theme='dark'] #tool-content .summary-value {
+  color: var(--text-main);
+}
+
+:root[data-theme='dark'] #tool-content small,
+:root[data-theme='dark'] #tool-content .tool-description,
+:root[data-theme='dark'] #tool-content .item-date,
+:root[data-theme='dark'] #tool-content .practice-hint,
+:root[data-theme='dark'] #tool-content .notes-empty,
+:root[data-theme='dark'] #tool-content .weather-empty {
+  color: var(--text-muted);
+}
+
+:root[data-theme='dark'] #tool-content .weather-summary,
+:root[data-theme='dark'] #tool-content .weather-summary h3,
+:root[data-theme='dark'] #tool-content .weather-summary p,
+:root[data-theme='dark'] #tool-content .weather-summary strong,
+:root[data-theme='dark'] #tool-content .weather-summary span {
+  color: #f8fafc;
+}
+
+:root[data-theme='dark'] #tool-content .weather-metric strong,
+:root[data-theme='dark'] #tool-content .weather-location-head h3,
+:root[data-theme='dark'] #tool-content .weather-section-title {
+  color: var(--text-main);
+}
+
+:root[data-theme='dark'] #tool-content .weather-metric {
+  background: var(--bg-surface);
+  border-color: var(--border-main);
+}
+
+:root[data-theme='dark'] #tool-content .weather-metric span,
+:root[data-theme='dark'] #tool-content .weather-date,
+:root[data-theme='dark'] #tool-content .weather-location-label {
+  color: var(--text-muted);
+}
+
+:root[data-theme='dark'] #tool-content .weather-tip {
+  background: #1e3a8a;
+  border-color: #60a5fa;
+  color: #dbeafe;
+}
+
+:root[data-theme='dark'] #tool-content .status-success,
+:root[data-theme='dark'] #tool-content [class*='status-success'] {
+  color: #86efac;
+}
+
+:root[data-theme='dark'] #tool-content .status-warning,
+:root[data-theme='dark'] #tool-content [class*='status-warning'] {
+  color: #fdba74;
+}
+
+:root[data-theme='dark'] #tool-content .status-error,
+:root[data-theme='dark'] #tool-content [class*='status-error'] {
+  color: #fda4af;
+}
+
+:root[data-theme='dark'] #tool-content .status-info,
+:root[data-theme='dark'] #tool-content [class*='status-info'] {
+  color: #93c5fd;
+}
+
+/* Practice tool: flashcard and MCQ surfaces need explicit overrides. */
+:root[data-theme='dark'] #tool-content .practice-flashcard,
+:root[data-theme='dark'] #tool-content .practice-modal-card,
+:root[data-theme='dark'] #tool-content .practice-empty,
+:root[data-theme='dark'] #tool-content .practice-toast {
+  background: var(--bg-surface);
+  border-color: var(--border-main);
+  color: var(--text-main);
+}
+
+:root[data-theme='dark'] #tool-content .practice-alert {
+  background: var(--bg-soft);
+  border-color: var(--border-main);
+  color: var(--text-main);
+}
+
+:root[data-theme='dark'] #tool-content .practice-flashcard::before {
+  background: linear-gradient(130deg, rgba(30, 58, 138, 0.3), rgba(15, 23, 42, 0.35));
+}
+
+:root[data-theme='dark'] #tool-content .practice-front-word,
+:root[data-theme='dark'] #tool-content .practice-mcq-prompt,
+:root[data-theme='dark'] #tool-content .practice-modal-header h3,
+:root[data-theme='dark'] #tool-content .practice-progress {
+  color: var(--text-main);
+}
+
+:root[data-theme='dark'] #tool-content .practice-tip,
+:root[data-theme='dark'] #tool-content .practice-face-label {
+  color: var(--text-muted);
+}
+
+:root[data-theme='dark'] #tool-content .practice-mcq-question {
+  border-color: var(--border-main);
+  background: linear-gradient(145deg, #17223a, #111827);
+}
+
+:root[data-theme='dark'] #tool-content .practice-mcq-option {
+  border-color: var(--border-main);
+  background: var(--bg-soft);
+  color: var(--text-main);
+}
+
+:root[data-theme='dark'] #tool-content .practice-mcq-option:hover {
+  border-color: #60a5fa;
+  background: #1e293b;
+}
+
+:root[data-theme='dark'] #tool-content .practice-mcq-option.selected {
+  border-color: #60a5fa;
+  background: #1e3a8a;
+}
+
+:root[data-theme='dark'] #tool-content .practice-mcq-option.correct {
+  border-color: #22c55e;
+  background: #14532d;
+}
+
+:root[data-theme='dark'] #tool-content .practice-mcq-option.wrong {
+  border-color: #fb7185;
+  background: #4c0519;
+}
+
+:root[data-theme='dark'] #tool-content .practice-mcq-result.correct,
+:root[data-theme='dark'] #tool-content .practice-toast.success,
+:root[data-theme='dark'] #tool-content .practice-alert.success {
+  background: #14532d;
+  border-color: #22c55e;
+  color: #86efac;
+}
+
+:root[data-theme='dark'] #tool-content .practice-mcq-result.wrong,
+:root[data-theme='dark'] #tool-content .practice-toast.warning,
+:root[data-theme='dark'] #tool-content .practice-alert.warning {
+  background: #4a2508;
+  border-color: #f59e0b;
+  color: #fdba74;
+}
+
+:root[data-theme='dark'] #tool-content .practice-alert.info,
+:root[data-theme='dark'] #tool-content .practice-toast.info {
+  background: #1e3a8a;
+  border-color: #60a5fa;
+  color: #93c5fd;
+}
+
+/* IELTS writing: topic selection cards and panel */
+:root[data-theme='dark'] #tool-content .ielts-topic-panel,
+:root[data-theme='dark'] #tool-content .ielts-writing-panel {
+  background: var(--bg-soft);
+  border-color: var(--border-main);
+  color: var(--text-main);
+}
+
+:root[data-theme='dark'] #tool-content .ielts-topic-item {
+  background: var(--bg-surface);
+  border-color: var(--border-main);
+  color: var(--text-main);
+}
+
+:root[data-theme='dark'] #tool-content .ielts-topic-item small {
+  color: var(--text-muted);
+}
+
+:root[data-theme='dark'] #tool-content .ielts-topic-item.active {
+  background: #1e3a8a;
+  border-color: #60a5fa;
+}
+
+:root[data-theme='dark'] #tool-content .ielts-topic-empty {
+  background: var(--bg-surface);
+  border-color: var(--border-main);
+  color: var(--text-muted);
+}
+
+/* Timetable tool: grid/table surfaces */
+:root[data-theme='dark'] #tool-content .timetable-shell,
+:root[data-theme='dark'] #tool-content .timetable-board {
+  background: var(--bg-surface);
+  border-color: var(--border-main);
+}
+
+:root[data-theme='dark'] #tool-content .time-column {
+  background: var(--bg-soft-2);
+}
+
+:root[data-theme='dark'] #tool-content .time-cell,
+:root[data-theme='dark'] #tool-content .time-cell.time-head,
+:root[data-theme='dark'] #tool-content .day-header-cell,
+:root[data-theme='dark'] #tool-content .day-footer-cell,
+:root[data-theme='dark'] #tool-content .slot-cell {
+  background: var(--bg-surface);
+  border-color: var(--border-main);
+  color: var(--text-main);
+}
+
+:root[data-theme='dark'] #tool-content .day-header-cell,
+:root[data-theme='dark'] #tool-content .day-footer-cell,
+:root[data-theme='dark'] #tool-content .time-cell.time-head {
+  background: var(--bg-soft-2);
+}
+
+:root[data-theme='dark'] #tool-content .slot-cell.event-cell,
+:root[data-theme='dark'] #tool-content .slot-cell.event-continued {
+  background: var(--event-bg, #1e3a8a);
+}
+
+:root[data-theme='dark'] #tool-content .slot-cell.event-start strong,
+:root[data-theme='dark'] #tool-content .slot-cell.event-start span {
+  color: var(--event-text, #0f172a);
+  text-shadow: none;
+}
+
+:root[data-theme='dark'] #tool-content .slot-cell.event-start span {
+  color: var(--event-text, #1e293b);
+}
+
+:root[data-theme='dark'] #tool-content .day-header-cell span,
+:root[data-theme='dark'] #tool-content .day-footer-cell span,
+:root[data-theme='dark'] #tool-content .week-indicator {
+  color: var(--text-muted);
+}
+
+:root[data-theme='dark'] #tool-content .timetable-status {
+  background: var(--bg-soft);
+  border-color: var(--border-main);
+  color: var(--text-main);
+}
+
+:root[data-theme='dark'] #tool-content .timetable-datebar {
+  background: #111827;
+  color: var(--text-main);
+}
+
+:root[data-theme='dark'] #tool-content .timetable-datebar.bottom {
+  border-top-color: var(--border-main);
+}
+
+/* Random tool: result popup */
+:root[data-theme='dark'] #tool-content .random-popup-dialog {
+  background: linear-gradient(180deg, #111827, #1f2937);
+  border-color: var(--border-main);
+  color: var(--text-main);
+}
+
+:root[data-theme='dark'] #tool-content .random-popup-close {
+  background: #334155;
+  color: #f8fafc;
+}
+
+:root[data-theme='dark'] #tool-content .random-popup-label {
+  color: #93c5fd;
+}
+
+:root[data-theme='dark'] #tool-content .random-popup-body h3,
+:root[data-theme='dark'] #tool-content .random-popup-value {
+  color: #f8fafc;
+}
+
+:root[data-theme='dark'] #tool-content .random-popup-meta,
+:root[data-theme='dark'] #tool-content .random-popup-body p {
+  color: #cbd5e1;
+}
+
+/* QR generator: result preview/details */
+:root[data-theme='dark'] #tool-content .qr-preview-panel,
+:root[data-theme='dark'] #tool-content .qr-form-panel,
+:root[data-theme='dark'] #tool-content .qr-details {
+  background: var(--bg-surface);
+  border-color: var(--border-main);
+  color: var(--text-main);
+}
+
+:root[data-theme='dark'] #tool-content .qr-preview {
+  background: radial-gradient(circle at top, #111827 0%, #1f2937 100%);
+  border-color: var(--border-main);
+}
+
+:root[data-theme='dark'] #tool-content .qr-preview p,
+:root[data-theme='dark'] #tool-content .qr-details p,
+:root[data-theme='dark'] #tool-content .qr-field,
+:root[data-theme='dark'] #tool-content .qr-field span {
+  color: var(--text-muted);
+}
+
+:root[data-theme='dark'] #tool-content .qr-details strong {
+  color: var(--text-main);
+}

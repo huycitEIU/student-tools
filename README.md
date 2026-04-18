@@ -7,7 +7,10 @@ Student Tools is a browser-based collection of utilities for students. It combin
 - Weather lookup and saved locations
 - Dictionary search
 - Chinese vocabulary manager and search
-- Practice flashcards (using Chinese Vocabulary data)
+- English vocabulary manager and search
+- Math and physics constants table with custom add
+- Practice flashcards (using Chinese and English Vocabulary data)
+- IELTS writing simulation with community topic sync, word count, and stopwatch
 - Random number and text picker
 - My Timetable planner
 - Study timer with focus and break modes
@@ -108,7 +111,7 @@ README.md                 # Project overview and setup
 ## Tool Groups
 
 - Study & Planning: Study Timer, My Timetable, Student Planner, Notes
-- Academics: Course Calculator, Grade Scale, Dictionary, Chinese Vocabulary, Practice
+- Academics: Course Calculator, Grade Scale, Dictionary, Chinese Vocabulary, English Vocabulary, Constants, Practice, IELTS Writing
 - Utilities: Weather, Unit Converter, Random, QR Generator
 - Finance: Money Management
 

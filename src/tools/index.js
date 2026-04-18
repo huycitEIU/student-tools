@@ -1,7 +1,10 @@
 import { courseCalculatorTool } from './courseCalculatorTool.js';
 import { chineseVocabularyTool } from './chineseVocabularyTool.js';
+import { englishVocabularyTool } from './englishVocabularyTool.js';
+import { constantsTool } from './constantsTool.js';
 import { dictionaryTool } from './dictionaryTool.js';
 import { gradeScaleTool } from './gradeScaleTool.js';
+import { ieltsWritingTool } from './ieltsWritingTool.js';
 import { moneyManagementTool } from './moneyManagementTool.js';
 import { myTimetableTool } from './myTimetableTool.js';
 import { qrGeneratorTool } from './qrGeneratorTool.js';
@@ -16,6 +19,8 @@ import { weatherTool } from './weatherTool.js';
 export const tools = [
 	courseCalculatorTool,
 	chineseVocabularyTool,
+	englishVocabularyTool,
+	constantsTool,
 	practiceTool,
 	dictionaryTool,
 	moneyManagementTool,
@@ -26,6 +31,7 @@ export const tools = [
 	weatherTool,
 	notesTool,
 	gradeScaleTool,
+	ieltsWritingTool,
 	studentPlannerTool,
 	unitConverterTool
 ];

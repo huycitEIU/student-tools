@@ -28,8 +28,17 @@ Lookup word definitions and related language data.
 ### Chinese Vocabulary
 Store Chinese words with pinyin, type, Sino-Vietnamese reading, and Vietnamese meaning, then search entries quickly.
 
+### English Vocabulary
+Store English words with phonetic notes, type, and Vietnamese meaning, then search entries quickly.
+
+### Constants
+Browse common math, physics, and chemistry constants in a table and add your own custom constants.
+
 ### Practice
-Practice flashcards from Chinese Vocabulary data with card flip, type filtering, and shuffle controls.
+Practice flashcards from Chinese and English vocabulary data with card flip, type filtering, and shuffle controls.
+
+### IELTS Writing
+Exam-style writing simulation with shared community topics, plain writing area (no writing-assist features), live word count, and stopwatch.
 
 ## Utilities
 

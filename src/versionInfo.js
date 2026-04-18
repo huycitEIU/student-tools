@@ -1,6 +1,17 @@
-export const APP_VERSION = 'v1.8.0';
+export const APP_VERSION = 'v1.9.0';
 
 export const VERSION_HISTORY = [
+  {
+    version: 'v1.9.0',
+    date: '2026-04-19',
+    updates: [
+      'Added global light/dark theme support for the app.',
+      'Added a topbar theme switch button with saved user preference.',
+      'Added dark-mode styling coverage for tool result surfaces across Practice, IELTS Writing, Timetable, Weather, Random, and QR Generator.',
+      'Refined the toolbar with clearer section hierarchy, slightly wider sidebar, and deeper-looking tool buttons.'
+    ],
+    fixes: []
+  },
   {
     version: 'v1.8.0',
     date: '2026-04-19',

@@ -36,18 +36,45 @@ let lastNotificationKey = '';
 let lastNotificationTime = 0;
 const CLOUD_DIRTY_EVENT = 'student-tools:cloud-dirty';
 const dirtyCloudTools = new Map();
+const collapsedToolCategories = new Set();
+const THEME_STORAGE_KEY = 'student-tools:theme';
+
+const getInitialTheme = () => {
+  const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+  if (storedTheme === 'light' || storedTheme === 'dark') {
+    return storedTheme;
+  }
+
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+};
+
+let currentTheme = getInitialTheme();
+
+const applyTheme = () => {
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  localStorage.setItem(THEME_STORAGE_KEY, currentTheme);
+};
+
+const toggleTheme = () => {
+  currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  applyTheme();
+  renderApp();
+};
 
 // Tool emoji icons for the home grid
 const toolIcons = {
   'weather': '🌤️',
   'dictionary': '📚',
   'chinese-vocabulary': '汉',
+  'english-vocabulary': 'A',
+  'constants': '∑',
   'practice': '🎴',
   'random': '🎲',
   'my-timetable': '📅',
   'study-timer': '⏱️',
   'notes': '📝',
   'grade-scale': '📊',
+  'ielts-writing': '✍️',
   'student-planner': '📋',
   'unit-converter': '🔄',
   'course-calculator': '🧮',
@@ -60,12 +87,15 @@ const toolDescriptions = {
   'weather': 'Check weather information',
   'dictionary': 'Look up word definitions',
   'chinese-vocabulary': 'Build and search Chinese vocabulary',
+  'english-vocabulary': 'Build and search English vocabulary',
+  'constants': 'Browse and store math/physics constants',
   'practice': 'Practice with flashcards',
   'random': 'Generate random values',
   'my-timetable': 'Manage your schedule',
   'study-timer': 'Focus and break timer',
   'notes': 'Take and organize notes',
   'grade-scale': 'View grade conversion scale',
+  'ielts-writing': 'IELTS writing simulation and topic practice',
   'student-planner': 'Plan your tasks',
   'unit-converter': 'Convert between units',
   'course-calculator': 'Calculate course grades',
@@ -82,7 +112,7 @@ const toolCategories = [
   {
     id: 'academics',
     label: 'Academics',
-    toolIds: ['course-calculator', 'grade-scale', 'dictionary', 'chinese-vocabulary', 'practice']
+    toolIds: ['course-calculator', 'grade-scale', 'dictionary', 'chinese-vocabulary', 'english-vocabulary', 'constants', 'practice', 'ielts-writing']
   },
   {
     id: 'utilities',
@@ -491,6 +521,12 @@ const renderVersionModal = () => {
   const entriesHtml = VERSION_HISTORY.map((item) => {
     const updatesHtml = (item.updates || []).map((update) => `<li>${escapeHtml(update)}</li>`).join('');
     const fixesHtml = (item.fixes || []).map((fix) => `<li>${escapeHtml(fix)}</li>`).join('');
+    const fixesSection = fixesHtml
+      ? `
+          <p class="version-entry-label">Fixes</p>
+          <ul>${fixesHtml}</ul>
+        `
+      : '';
 
     return `
       <article class="version-entry">
@@ -501,8 +537,7 @@ const renderVersionModal = () => {
         <div class="version-entry-body">
           <p class="version-entry-label">Updates</p>
           <ul>${updatesHtml || '<li>No update notes.</li>'}</ul>
-          <p class="version-entry-label">Fixes</p>
-          <ul>${fixesHtml || '<li>No fix notes.</li>'}</ul>
+          ${fixesSection}
         </div>
       </article>
     `;
@@ -542,6 +577,7 @@ const renderMenu = () => {
 
   const categorySections = toolCategories
     .map((category) => {
+      const isCollapsed = collapsedToolCategories.has(category.id);
       const toolItems = category.toolIds
         .map((toolId) => toolById.get(toolId))
         .filter(Boolean)
@@ -565,9 +601,11 @@ const renderMenu = () => {
       }
 
       return `
-        <li class="tool-category">
-          <p class="tool-category-label">${category.label}</p>
-          <ul class="tool-category-list">
+        <li class="tool-category ${isCollapsed ? 'collapsed' : ''}">
+          <button type="button" class="tool-category-label tool-category-toggle" data-category-id="${category.id}" aria-expanded="${!isCollapsed}">
+            <span>${category.label}</span>
+          </button>
+          <ul class="tool-category-list" ${isCollapsed ? 'hidden' : ''}>
             ${toolItems}
           </ul>
         </li>
@@ -628,19 +666,33 @@ const mountActiveTool = () => {
    app.innerHTML = `
      <div class="layout">
        <header class="topbar">
-         <button id="toggle-panel" class="menu-btn" aria-label="Toggle left panel">☰</button>
-         <h1>Student Tools</h1>
-         <div id="topbar-streak" class="topbar-streak ${streakState.count > 0 ? 'visible' : ''}">${streakDisplay}</div>
-         <div id="topbar-timer" class="topbar-timer ${timerBadgeText ? 'visible' : ''}">${timerBadgeText}</div>
-         <div id="topbar-unsaved" class="topbar-unsaved ${currentUser && hasUnsavedCloudChanges() ? 'visible' : ''}">${currentUser && hasUnsavedCloudChanges() ? 'Unsaved cloud changes' : ''}</div>
-         <button id="btn-open-version" class="version-btn" type="button" aria-label="Open version history">Version ${APP_VERSION}</button>
-          <button id="btn-open-notifications" class="notification-btn" type="button" aria-label="Open notifications">
-            Notifications
-            <span id="notification-unread" class="notification-unread" ${unreadNotificationCount > 0 ? '' : 'hidden'}>${unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}</span>
-          </button>
-         <div class="topbar-auth">
-          ${renderAuthControls()}
-         </div>
+        <div class="topbar-shell">
+          <div class="topbar-group topbar-group-left">
+            <button id="toggle-panel" class="menu-btn" type="button" aria-label="Toggle left panel">☰</button>
+            <div class="topbar-brand">
+              <h1>Student Tools</h1>
+              <span>${getActiveToolLabel()}</span>
+            </div>
+          </div>
+
+          <div class="topbar-group topbar-group-center">
+            <div id="topbar-streak" class="topbar-streak ${streakState.count > 0 ? 'visible' : ''}">${streakDisplay}</div>
+            <div id="topbar-timer" class="topbar-timer ${timerBadgeText ? 'visible' : ''}">${timerBadgeText}</div>
+            <div id="topbar-unsaved" class="topbar-unsaved ${currentUser && hasUnsavedCloudChanges() ? 'visible' : ''}">${currentUser && hasUnsavedCloudChanges() ? 'Unsaved cloud changes' : ''}</div>
+          </div>
+
+          <div class="topbar-group topbar-group-right">
+            <button id="btn-toggle-theme" class="theme-btn" type="button" aria-label="Toggle theme">${currentTheme === 'dark' ? 'Light' : 'Dark'} theme</button>
+            <button id="btn-open-version" class="version-btn" type="button" aria-label="Open version history">Version ${APP_VERSION}</button>
+            <button id="btn-open-notifications" class="notification-btn" type="button" aria-label="Open notifications">
+              Notifications
+              <span id="notification-unread" class="notification-unread" ${unreadNotificationCount > 0 ? '' : 'hidden'}>${unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}</span>
+            </button>
+            <div class="topbar-auth">
+              ${renderAuthControls()}
+            </div>
+          </div>
+        </div>
        </header>
  
        <div class="content-shell">
@@ -682,6 +734,7 @@ const mountActiveTool = () => {
   const profileModalClose = document.querySelector('#profile-modal-close');
   const profileModalBackdrop = document.querySelector('#profile-modal-backdrop');
   const openNotificationsButton = document.querySelector('#btn-open-notifications');
+  const toggleThemeButton = document.querySelector('#btn-toggle-theme');
   const openVersionButton = document.querySelector('#btn-open-version');
   const notificationModalBackdrop = document.querySelector('#notification-modal-backdrop');
   const notificationModalClose = document.querySelector('#notification-modal-close');
@@ -693,6 +746,26 @@ const mountActiveTool = () => {
    });
 
    toolMenu.addEventListener('click', (event) => {
+     const categoryToggle = event.target.closest('[data-category-id]');
+     if (categoryToggle) {
+       const categoryId = categoryToggle.dataset.categoryId;
+       if (categoryId) {
+         const isCollapsed = collapsedToolCategories.has(categoryId);
+         if (isCollapsed) {
+           collapsedToolCategories.clear();
+           toolCategories.forEach((category) => {
+             if (category.id !== categoryId) {
+               collapsedToolCategories.add(category.id);
+             }
+           });
+         } else {
+           collapsedToolCategories.add(categoryId);
+         }
+         renderApp();
+       }
+       return;
+     }
+
      const button = event.target.closest('[data-tool-id]');
      if (!button) {
        return;
@@ -725,6 +798,10 @@ const mountActiveTool = () => {
   openVersionButton?.addEventListener('click', () => {
    openVersionModal();
   });
+
+    toggleThemeButton?.addEventListener('click', () => {
+     toggleTheme();
+    });
 
    notificationModalClose?.addEventListener('click', () => {
     closeNotificationModal();
@@ -1018,3 +1095,4 @@ watchAuthState(async (user) => {
 });
 
 renderApp();
+applyTheme();
