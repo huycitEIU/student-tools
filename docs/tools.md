@@ -25,6 +25,12 @@ Quick reference for grade conversions.
 ### Dictionary
 Lookup word definitions and related language data.
 
+### Chinese Vocabulary
+Store Chinese words with pinyin, type, Sino-Vietnamese reading, and Vietnamese meaning, then search entries quickly.
+
+### Practice
+Practice flashcards from Chinese Vocabulary data with card flip, type filtering, and shuffle controls.
+
 ## Utilities
 
 ### Weather

@@ -20,6 +20,8 @@
 @import url('./tools/weather.css');
 @import url('./tools/notes.css');
 @import url('./tools/dictionary.css');
+@import url('./tools/chineseVocabulary.css');
+@import url('./tools/practice.css');
 @import url('./tools/random.css');
 @import url('./tools/timer.css');
 @import url('./tools/courseCalculator.css');

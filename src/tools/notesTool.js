@@ -3,6 +3,21 @@ import { deleteToolData, loadToolData, saveToolData } from '../firebase/toolData
 
 const STORAGE_KEY = 'student-tools:notes-v1';
 const TOOL_ID = 'notes';
+const SESSION_HYDRATION_KEY_PREFIX = 'student-tools:notes-hydrated-v1:';
+const CLOUD_DIRTY_EVENT = 'student-tools:cloud-dirty';
+
+const getHydrationKey = (uid) => `${SESSION_HYDRATION_KEY_PREFIX}${uid}`;
+
+const emitCloudDirty = (dirty) => {
+  window.dispatchEvent(
+    new CustomEvent(CLOUD_DIRTY_EVENT, {
+      detail: {
+        toolId: TOOL_ID,
+        dirty
+      }
+    })
+  );
+};
 
 const loadNotes = () => {
   try {
@@ -22,21 +37,25 @@ const loadLocalNotes = loadNotes;
 const loadStoredNotes = async () => {
   const user = getCurrentUser();
   if (!user) {
+    emitCloudDirty(false);
     return loadLocalNotes();
   }
 
-  const localNotes = loadLocalNotes();
+  const hydrationKey = getHydrationKey(user.uid);
+  if (sessionStorage.getItem(hydrationKey) === '1') {
+    return loadLocalNotes();
+  }
+
   const remoteNotes = await loadToolData(user.uid, TOOL_ID, null);
+  sessionStorage.setItem(hydrationKey, '1');
 
   if (Array.isArray(remoteNotes)) {
+    saveNotes(remoteNotes);
+    emitCloudDirty(false);
     return remoteNotes;
   }
 
-  if (localNotes.length > 0) {
-    await saveToolData(user.uid, TOOL_ID, localNotes);
-  }
-
-  return localNotes;
+  return loadLocalNotes();
 };
 
 const persistNotes = async (notes) => {
@@ -47,7 +66,10 @@ const persistNotes = async (notes) => {
     return;
   }
 
+  sessionStorage.setItem(getHydrationKey(user.uid), '1');
+
   await saveToolData(user.uid, TOOL_ID, notes);
+  emitCloudDirty(false);
 };
 
 const clearStoredNotes = async () => {
@@ -58,7 +80,10 @@ const clearStoredNotes = async () => {
     return;
   }
 
+  sessionStorage.setItem(getHydrationKey(user.uid), '1');
+
   await deleteToolData(user.uid, TOOL_ID);
+  emitCloudDirty(false);
 };
 
 const createNoteCard = (note) => {
@@ -127,11 +152,20 @@ export const notesTool = {
     let isMounted = true;
 
     const applyNotes = async () => {
-      notes = await loadStoredNotes();
+      let loadWarning = '';
+      try {
+        notes = await loadStoredNotes();
+      } catch {
+        notes = loadLocalNotes();
+        loadWarning = 'Could not load notes from cloud. Showing local notes.';
+      }
       if (!isMounted) {
         return;
       }
       renderNotes();
+      if (loadWarning) {
+        statusBox.textContent = loadWarning;
+      }
     };
 
     const renderNotes = () => {
@@ -178,11 +212,17 @@ export const notesTool = {
       }
 
       notes = notes.filter((item) => item.id !== noteId);
-      await persistNotes(notes);
+      try {
+        await persistNotes(notes);
+        renderNotes();
+      } catch {
+        emitCloudDirty(true);
+        renderNotes();
+        statusBox.textContent = 'Note deleted locally. Could not sync delete to cloud.';
+      }
       if (editingNoteId === noteId) {
         resetForm();
       }
-      renderNotes();
     };
 
     saveBtn.addEventListener('click', async () => {
@@ -220,9 +260,16 @@ export const notesTool = {
         statusBox.textContent = 'Note saved.';
       }
 
-      await persistNotes(notes);
-      resetForm();
-      renderNotes();
+      try {
+        await persistNotes(notes);
+        resetForm();
+        renderNotes();
+      } catch {
+        emitCloudDirty(true);
+        resetForm();
+        renderNotes();
+        statusBox.textContent = 'Saved locally. Could not sync notes to cloud right now.';
+      }
     });
 
     clearBtn.addEventListener('click', () => {
@@ -242,10 +289,18 @@ export const notesTool = {
       }
 
       notes = [];
-      await clearStoredNotes();
+      let deleteAllSyncFailed = false;
+      try {
+        await clearStoredNotes();
+      } catch {
+        emitCloudDirty(true);
+        deleteAllSyncFailed = true;
+      }
       resetForm();
       renderNotes();
-      statusBox.textContent = 'All notes deleted.';
+      statusBox.textContent = deleteAllSyncFailed
+        ? 'All notes deleted locally. Could not sync delete to cloud.'
+        : 'All notes deleted.';
     });
 
     notesList.addEventListener('click', (event) => {

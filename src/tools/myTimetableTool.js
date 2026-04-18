@@ -1,8 +1,11 @@
 import { getCurrentUser } from '../firebase/auth.js';
-import { deleteToolData, loadToolData, saveToolData } from '../firebase/toolData.js';
+import { loadToolData, saveToolData } from '../firebase/toolData.js';
 
 const STORAGE_KEY = 'student-tools:timetable-events-v1';
 const TOOL_ID = 'timetable';
+const SESSION_HYDRATION_KEY_PREFIX = 'student-tools:timetable-hydrated-v1:';
+const CLOUD_SYNC_SNAPSHOT_KEY_PREFIX = 'student-tools:timetable-cloud-snapshot-v1:';
+const CLOUD_DIRTY_EVENT = 'student-tools:cloud-dirty';
 const START_HOUR = 7;
 const END_HOUR = 20;
 const SLOT_MINUTES = 30;
@@ -84,46 +87,110 @@ const saveEventsByWeek = (eventsByWeek) => {
 
 const loadLocalEventsByWeek = loadEventsByWeek;
 
+const getHydrationKey = (uid) => `${SESSION_HYDRATION_KEY_PREFIX}${uid}`;
+const getCloudSnapshotKey = (uid) => `${CLOUD_SYNC_SNAPSHOT_KEY_PREFIX}${uid}`;
+
+const serializeEventsByWeek = (eventsByWeek = {}) => {
+  const normalized = Object.keys(eventsByWeek)
+    .sort()
+    .reduce((accumulator, weekKey) => {
+      const weekEvents = Array.isArray(eventsByWeek[weekKey]) ? eventsByWeek[weekKey] : [];
+      const normalizedWeekEvents = [...weekEvents]
+        .map((event) => ({
+          id: String(event.id || ''),
+          title: String(event.title || ''),
+          dayIndex: Number(event.dayIndex) || 0,
+          startPeriod: Number(event.startPeriod) || 0,
+          duration: Number(event.duration) || 0,
+          colorKey: String(event.colorKey || defaultColorKey)
+        }))
+        .sort((first, second) => first.id.localeCompare(second.id));
+
+      accumulator[weekKey] = normalizedWeekEvents;
+      return accumulator;
+    }, {});
+
+  return JSON.stringify(normalized);
+};
+
+const hasAnyEvents = (eventsByWeek = {}) => {
+  return Object.values(eventsByWeek).some((events) => Array.isArray(events) && events.length > 0);
+};
+
+const loadCloudSyncSnapshot = (uid) => {
+  if (!uid) {
+    return null;
+  }
+  return localStorage.getItem(getCloudSnapshotKey(uid));
+};
+
+const saveCloudSyncSnapshot = (uid, eventsByWeek) => {
+  if (!uid) {
+    return;
+  }
+  localStorage.setItem(getCloudSnapshotKey(uid), serializeEventsByWeek(eventsByWeek));
+};
+
+const computeUnsyncedChanges = (uid, eventsByWeek) => {
+  const currentSnapshot = serializeEventsByWeek(eventsByWeek);
+  const cloudSnapshot = loadCloudSyncSnapshot(uid);
+
+  if (!cloudSnapshot) {
+    return hasAnyEvents(eventsByWeek);
+  }
+
+  return currentSnapshot !== cloudSnapshot;
+};
+
+const emitCloudDirty = (dirty) => {
+  window.dispatchEvent(
+    new CustomEvent(CLOUD_DIRTY_EVENT, {
+      detail: {
+        toolId: TOOL_ID,
+        dirty
+      }
+    })
+  );
+};
+
 const loadStoredEventsByWeek = async () => {
   const user = getCurrentUser();
   if (!user) {
+    emitCloudDirty(false);
     return loadLocalEventsByWeek();
   }
 
-  const localEvents = loadLocalEventsByWeek();
+  const hydrationKey = getHydrationKey(user.uid);
+  if (sessionStorage.getItem(hydrationKey) === '1') {
+    return loadLocalEventsByWeek();
+  }
+
   const remoteEvents = await loadToolData(user.uid, TOOL_ID, null);
+  sessionStorage.setItem(hydrationKey, '1');
 
   if (remoteEvents && typeof remoteEvents === 'object' && Object.keys(remoteEvents).length > 0) {
+    saveEventsByWeek(remoteEvents);
+    saveCloudSyncSnapshot(user.uid, remoteEvents);
     return remoteEvents;
   }
 
-  if (Object.keys(localEvents).length > 0) {
-    await saveToolData(user.uid, TOOL_ID, localEvents);
-  }
-
-  return localEvents;
+  return loadLocalEventsByWeek();
 };
 
-const persistEventsByWeek = async (eventsByWeek) => {
+const persistEventsByWeek = (eventsByWeek) => {
   saveEventsByWeek(eventsByWeek);
+};
 
+const saveEventsByWeekToCloud = async (eventsByWeek) => {
   const user = getCurrentUser();
   if (!user) {
     return;
   }
+
+  sessionStorage.setItem(getHydrationKey(user.uid), '1');
 
   await saveToolData(user.uid, TOOL_ID, eventsByWeek);
-};
-
-const clearStoredTimetable = async () => {
-  saveEventsByWeek({});
-
-  const user = getCurrentUser();
-  if (!user) {
-    return;
-  }
-
-  await deleteToolData(user.uid, TOOL_ID);
+  saveCloudSyncSnapshot(user.uid, eventsByWeek);
 };
 
 const hasOverlap = (events, candidate, ignoreId = null) => {
@@ -158,6 +225,7 @@ export const myTimetableTool = {
           <button id="prev-week-btn" class="action-btn" type="button">Previous Week</button>
           <button id="next-week-btn" class="action-btn" type="button">Next Week</button>
           <button id="copy-next-week-btn" class="action-btn" type="button">Copy To Next Week</button>
+          <button id="save-timetable-btn" class="action-btn primary" type="button">Save to Firebase</button>
           <div id="week-indicator" class="week-indicator"></div>
         </div>
 
@@ -206,6 +274,7 @@ export const myTimetableTool = {
     const prevWeekBtn = root.querySelector('#prev-week-btn');
     const nextWeekBtn = root.querySelector('#next-week-btn');
     const copyNextWeekBtn = root.querySelector('#copy-next-week-btn');
+    const saveTimetableBtn = root.querySelector('#save-timetable-btn');
     const weekIndicator = root.querySelector('#week-indicator');
     const eventTitleInput = root.querySelector('#event-title');
     const eventDaySelect = root.querySelector('#event-day');
@@ -227,13 +296,34 @@ export const myTimetableTool = {
     let currentWeekStart = todayWeekStart;
     let eventsByWeek = {};
     let selectedEventId = null;
+    let hasUnsyncedChanges = false;
     let isMounted = true;
+
+    const updateSaveButtonState = () => {
+      const user = getCurrentUser();
+      if (!user) {
+        saveTimetableBtn.textContent = 'Sign in to save cloud';
+        return;
+      }
+
+      saveTimetableBtn.textContent = hasUnsyncedChanges ? 'Save to Firebase*' : 'Save to Firebase';
+    };
+
+    const markChanged = () => {
+      hasUnsyncedChanges = true;
+      updateSaveButtonState();
+      emitCloudDirty(true);
+    };
 
     const applyEventsByWeek = async () => {
       eventsByWeek = await loadStoredEventsByWeek();
       if (!isMounted) {
         return;
       }
+      const user = getCurrentUser();
+      hasUnsyncedChanges = user ? computeUnsyncedChanges(user.uid, eventsByWeek) : false;
+      updateSaveButtonState();
+      emitCloudDirty(hasUnsyncedChanges);
       renderWeek();
     };
 
@@ -246,6 +336,7 @@ export const myTimetableTool = {
     const setCurrentWeekEvents = (events) => {
       eventsByWeek[currentWeekKey()] = events;
       persistEventsByWeek(eventsByWeek);
+      markChanged();
     };
 
     const getWeekEventsByKey = (weekKey) => {
@@ -255,6 +346,7 @@ export const myTimetableTool = {
     const setWeekEventsByKey = (weekKey, events) => {
       eventsByWeek[weekKey] = events;
       persistEventsByWeek(eventsByWeek);
+      markChanged();
     };
 
     const resetForm = () => {
@@ -545,7 +637,41 @@ export const myTimetableTool = {
       statusBox.textContent = `Copied ${copiedCount} event(s) to next week. Skipped ${skippedCount} conflicted event(s).`;
     });
 
+    saveTimetableBtn.addEventListener('click', async () => {
+      const user = getCurrentUser();
+      if (!user) {
+        statusBox.textContent = 'Sign in to save timetable data to Firebase.';
+        updateSaveButtonState();
+        return;
+      }
+
+      if (!hasUnsyncedChanges) {
+        statusBox.textContent = 'No new timetable changes to save.';
+        updateSaveButtonState();
+        return;
+      }
+
+      const previousText = saveTimetableBtn.textContent;
+      saveTimetableBtn.disabled = true;
+      saveTimetableBtn.textContent = 'Saving...';
+
+      try {
+        await saveEventsByWeekToCloud(eventsByWeek);
+        hasUnsyncedChanges = false;
+        statusBox.textContent = 'Timetable saved to Firebase.';
+        emitCloudDirty(false);
+      } catch {
+        statusBox.textContent = 'Could not save timetable to Firebase right now.';
+        emitCloudDirty(true);
+      } finally {
+        saveTimetableBtn.disabled = false;
+        saveTimetableBtn.textContent = previousText;
+        updateSaveButtonState();
+      }
+    });
+
     resetForm();
+    updateSaveButtonState();
     applyEventsByWeek();
 
     return () => {
